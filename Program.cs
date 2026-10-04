@@ -17,14 +17,15 @@ internal static class Program
 
         try
         {
-            Console.WriteLine("## 장비 통신상태 동시점검 프로그램 ##");
+            Console.WriteLine("## 장비 상태 점검 시뮬레이터 ##");
+            Console.WriteLine("실제 네트워크에 연결하지 않습니다.");
             Console.WriteLine("------------------------------");
 
             var checker = new StatusChecker();
             var results = await checker.CheckAllDevicesAsync(
                 cancellationTokenSource.Token);
 
-            Console.WriteLine("\n--- 최종 점검 결과 ---");
+            Console.WriteLine("\n--- 최종 점검 결과 (시뮬레이션) ---");
             foreach (var result in results)
             {
                 var status = result.IsOnline ? "ONLINE 🟢" : "OFFLINE 🔴";
@@ -33,7 +34,7 @@ internal static class Program
             }
 
             Console.WriteLine("------------------------------");
-            Console.WriteLine("프로그램 종료.");
+            Console.WriteLine("시뮬레이션 종료.");
             return 0;
         }
         catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)

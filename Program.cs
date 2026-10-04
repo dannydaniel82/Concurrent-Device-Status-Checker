@@ -1,31 +1,49 @@
-﻿// Program.cs
-// Main Program Entry Point for Concurrent Device Status Monitoring
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
-class Program
+internal static class Program
 {
-    // Application Entry Point
-    static async Task Main(string[] args)
+    private static async Task<int> Main()
     {
-        Console.WriteLine("## 장비 통신상태 동시점검 프로그램##");
-        Console.WriteLine("------------------------------");
-
-        // Initialize Status Checkr
-        var checker = new StatusChecker();
-        // Start Async Checking and Wait for Results
-        var results = await checker.CheckAllDevicesAsync();
-    
-        Console.WriteLine("\n--- 최종 점검 결과 ---");
-
-        // Display Reuslts
-        foreach (var result in results)
+        using var cancellationTokenSource = new CancellationTokenSource();
+        ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
         {
-            string ip = result.Key; // result 는 Dictionary 형태
-            string status = result.Value ? "ONLINE 🟢" : "OFFLINE 🔴";
-            Console.WriteLine($"Device [{ip.PadRight(15)}]: {status}");
+            eventArgs.Cancel = true;
+            cancellationTokenSource.Cancel();
+        };
+
+        Console.CancelKeyPress += cancelHandler;
+
+        try
+        {
+            Console.WriteLine("## 장비 통신상태 동시점검 프로그램 ##");
+            Console.WriteLine("------------------------------");
+
+            var checker = new StatusChecker();
+            var results = await checker.CheckAllDevicesAsync(
+                cancellationTokenSource.Token);
+
+            Console.WriteLine("\n--- 최종 점검 결과 ---");
+            foreach (var result in results)
+            {
+                var status = result.IsOnline ? "ONLINE 🟢" : "OFFLINE 🔴";
+                Console.WriteLine(
+                    $"Device [{result.IpAddress.PadRight(15)}]: {status} ({result.Latency.TotalMilliseconds:F0}ms)");
+            }
+
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("프로그램 종료.");
+            return 0;
         }
-        Console.WriteLine("------------------------------");
-        Console.WriteLine("프로그램 종료.");
+        catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)
+        {
+            Console.WriteLine("\n점검이 취소되었습니다.");
+            return 130;
+        }
+        finally
+        {
+            Console.CancelKeyPress -= cancelHandler;
+        }
     }
 }

@@ -1,16 +1,17 @@
 # Concurrent-Device-Status-Checker
 
-## Overview
+## Purpose
 
-A small .NET 9 console app that checks a fixed list of devices concurrently.
-The current PingEmitter simulates network latency and success or failure; it does not send ICMP packets.
+A small .NET 9 console demo of concurrent asynchronous device checks, structured results, and Ctrl+C cancellation.
+
+Checks are simulated: the program does not contact devices or send ICMP packets. See [REQUIREMENTS.md](REQUIREMENTS.md) for the project scope and acceptance criteria.
 
 ## Features
 
 - Concurrent checks with Task.WhenAll
-- Async cancellation with Ctrl+C
-- Structured results with device address, status, and elapsed simulated latency
-- Configurable device list through StatusChecker
+- Cancellation of in-flight simulated checks with Ctrl+C
+- Structured results with address, online status, and simulated latency
+- Alternate address lists can be supplied to StatusChecker
 
 ## Requirements
 
@@ -19,7 +20,7 @@ The current PingEmitter simulates network latency and success or failure; it doe
 
 ## Run
 
-From the project directory, run `dotnet run`.
+From the project directory, run dotnet run.
 
 Press Ctrl+C to cancel an active check. The program stops pending delays and exits with a cancellation message.
 

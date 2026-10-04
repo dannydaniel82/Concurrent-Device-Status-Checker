@@ -1,29 +1,27 @@
-// PingEmitter.cs
-// Ping Test Simulator
-
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
-// Simulates Ping Operations to Test Device Connectivity
-public class PingEmitter
+public sealed class PingEmitter
 {
-    private static readonly Random _random = new Random();
-
-    // Sends a Simulated Ping to the Specified IP Address
-    public async Task<bool> SendPingAsync(string ip)
+    public async Task<DeviceStatusResult> SendPingAsync(
+        string ipAddress,
+        CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($" == [{ip}] Ping Test start . . . ");
+        ArgumentException.ThrowIfNullOrWhiteSpace(ipAddress);
+        Console.WriteLine($" == [{ipAddress}] Ping Test start . . . ");
 
-        // Simulate Network Latency : 500ms ~ 1500ms
-        int latency = new Random().Next(500, 1501);
-        await Task.Delay(latency);
+        var latencyMilliseconds = Random.Shared.Next(500, 1501);
+        await Task.Delay(latencyMilliseconds, cancellationToken);
 
-        // Simulate Success/Failure (90% success rate)
-        bool isSuccess = _random.Next(0, 10) != 0;
+        var isOnline = Random.Shared.Next(100) >= 10;
+        var resultMessage = isOnline ? "success" : "failed";
+        Console.WriteLine(
+            $" <- [{ipAddress}] Ping 응답 수신 ({latencyMilliseconds}ms - 결과 : {resultMessage})");
 
-        string resultMessage = isSuccess ? "successed" : "failed";
-        Console.WriteLine($" <- [{ip}] Ping 응답 수신 ({latency}ms - 결과 : {resultMessage})");
-
-        return isSuccess;
+        return new DeviceStatusResult(
+            ipAddress,
+            isOnline,
+            TimeSpan.FromMilliseconds(latencyMilliseconds));
     }
 }

@@ -25,14 +25,9 @@ public sealed class StatusChecker
     public async Task<IReadOnlyList<DeviceStatusResult>> CheckAllDevicesAsync(
         CancellationToken cancellationToken = default)
     {
-        Console.WriteLine("Check all devices' status . . .");
-
         var checkTasks = _deviceIps
             .Select(ip => _pingEmitter.SendPingAsync(ip, cancellationToken));
 
-        var results = await Task.WhenAll(checkTasks);
-
-        Console.WriteLine("모든 장비 점검 완료");
-        return results;
+        return await Task.WhenAll(checkTasks);
     }
 }
